@@ -33,7 +33,8 @@
 
     <h2>Score: <span id="score">0</span></h2>
 
-    <img id="noob" src="https://i.imgur.com/6o5ZB0z.png">
+    <!-- YOUR OLD NOOB MODEL -->
+    <img id="noob" src="noob.png">
 
     <h2>Store</h2>
 
@@ -46,9 +47,6 @@
     </div>
 
 <script>
-    // --------------------
-    // LOAD SAVE DATA
-    // --------------------
     let score = Number(localStorage.getItem("score")) || 0;
     let clickPower = Number(localStorage.getItem("clickPower")) || 1;
     let upgradeCost = Number(localStorage.getItem("upgradeCost")) || 20;
@@ -56,14 +54,10 @@
     let autoClickers = Number(localStorage.getItem("autoClickers")) || 0;
     let autoCost = Number(localStorage.getItem("autoCost")) || 100;
 
-    // SHOW LOADED VALUES
     document.getElementById("score").textContent = score;
     document.getElementById("upgradeCost").textContent = upgradeCost;
     document.getElementById("autoCost").textContent = autoCost;
 
-    // --------------------
-    // SAVE GAME FUNCTION
-    // --------------------
     function saveGame() {
         localStorage.setItem("score", score);
         localStorage.setItem("clickPower", clickPower);
@@ -72,48 +66,34 @@
         localStorage.setItem("autoCost", autoCost);
     }
 
-    // --------------------
-    // CLICK NOOB
-    // --------------------
     document.getElementById("noob").onclick = function () {
         score += clickPower;
         document.getElementById("score").textContent = score;
         saveGame();
     };
 
-    // --------------------
-    // BUY +1 CLICK POWER UPGRADE
-    // --------------------
     function buyUpgrade() {
         if (score >= upgradeCost) {
             score -= upgradeCost;
             clickPower++;
             upgradeCost = Math.floor(upgradeCost * 1.5);
-
             document.getElementById("score").textContent = score;
             document.getElementById("upgradeCost").textContent = upgradeCost;
             saveGame();
         }
     }
 
-    // --------------------
-    // BUY AUTO CLICKER
-    // --------------------
     function buyAuto() {
         if (score >= autoCost) {
             score -= autoCost;
             autoClickers++;
             autoCost = Math.floor(autoCost * 1.8);
-
             document.getElementById("score").textContent = score;
             document.getElementById("autoCost").textContent = autoCost;
             saveGame();
         }
     }
 
-    // --------------------
-    // AUTO CLICK LOOP
-    // --------------------
     setInterval(() => {
         if (autoClickers > 0) {
             score += autoClickers;
