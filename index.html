@@ -1,173 +1,469 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Click-a-Noob | Full Version</title>
-    <style>
-        body {
-            background: #1b1b1b;
-            color: white;
-            font-family: Arial, sans-serif;
-            text-align: center;
-            user-select: none;
-        }
-
-        #noob {
-            width: 200px;
-            cursor: pointer;
-            margin-top: 30px;
-        }
-
-        #score {
-            font-size: 40px;
-            margin-top: 20px;
-            font-weight: bold;
-        }
-
-        .shop {
-            margin-top: 40px;
-        }
-
-        .shop button {
-            background: #ffd24a;
-            border: none;
-            padding: 12px 20px;
-            font-size: 18px;
-            border-radius: 12px;
-            margin: 10px;
-            cursor: pointer;
-            transition: 0.15s;
-        }
-
-        .shop button:hover {
-            transform: scale(1.1);
-            background: #ffea84;
-        }
-    </style>
+  <meta charset="utf-8" />
+  <title>Click-a-Noob — Upgraded</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root{
+      --bg:#0f1113;
+      --panel:#121417;
+      --accent:#ffd24a;
+      --muted:#9aa3b2;
+      --card:#17191b;
+    }
+    html,body{height:100%;margin:0;background:var(--bg);color:#eef;font-family:Inter,Arial,Helvetica,sans-serif}
+    .wrap{max-width:1100px;margin:18px auto;padding:16px}
+    header{display:flex;gap:12px;align-items:center;justify-content:space-between}
+    h1{margin:0;font-size:22px}
+    .status{display:flex;gap:12px;align-items:center}
+    #scoreBox{background:var(--panel);padding:10px 14px;border-radius:10px;font-weight:700}
+    .controls button{margin-left:8px;padding:8px 10px;border-radius:8px;border:none;background:#222;color:#fff;cursor:pointer}
+    .main{display:grid;grid-template-columns:360px 1fr;gap:16px;margin-top:14px}
+    .card{background:var(--panel);padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
+    #noob{width:240px;cursor:pointer;display:block;margin:18px auto;animation:wiggle 1.1s infinite ease-in-out}
+    @keyframes wiggle{0%{transform:rotate(0) scale(1)}25%{transform:rotate(2deg) scale(1.03)}50%{transform:rotate(0) scale(1)}75%{transform:rotate(-2deg) scale(1.03)}100%{transform:rotate(0) scale(1)}}
+    .meta{display:flex;gap:10px;justify-content:center;margin-top:8px;color:var(--muted);font-size:14px}
+    .shop-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:10px}
+    .shop-item{background:var(--card);padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.02);cursor:pointer;transition:transform .12s,box-shadow .12s;position:relative}
+    .shop-item:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(0,0,0,0.5)}
+    .shop-item h3{margin:0 0 6px 0;font-size:16px}
+    .shop-item small{color:var(--muted)}
+    .shop-cost{position:absolute;right:10px;top:12px;background:rgba(0,0,0,0.25);padding:6px 8px;border-radius:8px;font-weight:600}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    #achievementsList{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+    .ach{background:#111;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.02);font-size:13px}
+    .muted{opacity:.6}
+    .small{font-size:13px;color:var(--muted)}
+    footer{margin-top:18px;color:var(--muted);font-size:13px}
+    .badge{display:inline-block;padding:4px 6px;background:#163f2b;color:#baf7cf;border-radius:6px;font-weight:700;margin-left:6px}
+  </style>
 </head>
 <body>
+  <div class="wrap">
+    <header>
+      <h1>Click-a-Noob</h1>
+      <div class="status">
+        <div id="scoreBox">Score: <span id="score">0</span></div>
+        <div class="small">Clicks/power: <strong id="clickPowerDisplay">1</strong></div>
+        <div class="small">Rebirth x: <strong id="rebirthMulDisplay">1</strong></div>
+        <div class="controls">
+          <button id="muteBtn" title="Toggle sound">🔊</button>
+          <button id="resetBtn" title="Reset save">Reset</button>
+        </div>
+      </div>
+    </header>
 
-    <h1>Click-a-Noob</h1>
-    <div id="score">Clicks: 0</div>
+    <div class="main">
+      <!-- LEFT: Avatar / Achievements -->
+      <div>
+        <div class="card">
+          <!-- Use your uploaded repo image or local file (path below). -->
+          <img id="noob" src="/mnt/data/A_2D_digital_illustration_features_a_Roblox_Noob_c.png" alt="noob">
+          <div class="meta">
+            <div>Auto: <span id="autoCount">0</span></div>
+            <div>SuperAuto: <span id="superCount">0</span></div>
+            <div class="muted">Clicks total: <span id="totalClicks">0</span></div>
+          </div>
+        </div>
 
-    <!-- Your noob.png from GitHub -->
-    <img id="noob" src="https://raw.githubusercontent.com/jergan-studio/Click-a-noob/main/noob.png">
+        <div class="card" style="margin-top:12px">
+          <h3>Achievements</h3>
+          <div id="achievementsList" class="small">
+            <!-- populated by JS -->
+          </div>
+        </div>
 
-    <div class="shop">
-        <h2>Shop</h2>
+        <div class="card" style="margin-top:12px">
+          <h3>Rebirth</h3>
+          <div class="small">Rebirth resets progress but grants a permanent multiplier to clicks and autos.</div>
+          <div style="margin-top:10px" class="row">
+            <div>Rebirth Cost: <strong id="rebirthCostDisplay">100000</strong></div>
+            <button onclick="attemptRebirth()">Rebirth</button>
+            <div class="small muted">Owned: <span id="rebirthCount">0</span></div>
+          </div>
+        </div>
+      </div>
 
-        <button onclick="buyX2()">x2 Clicks (Cost: 100)</button>
-        <br>
-        <button onclick="buyGolden()">Golden Noob (Cost: 500)</button>
+      <!-- RIGHT: Shop & Upgrades -->
+      <div>
+        <div class="card">
+          <h3>Shop</h3>
+          <div class="small muted">Click an item to buy. Hover to hear select sound.</div>
+
+          <div class="shop-grid" id="shopGrid">
+            <!-- shop items created by JS for easier extendability -->
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:12px">
+          <h3>Progress & Controls</h3>
+          <div class="row" style="margin-top:8px">
+            <button onclick="addClicks(100)">Get +100 (debug)</button>
+            <button onclick="exportSave()">Export Save</button>
+            <button onclick="importSavePrompt()">Import Save</button>
+          </div>
+          <div class="small muted" style="margin-top:8px">Tip: add sound files to your repo at <code>sounds/</code> with names <code>oof.wav, ding.wav, select.wav, music.mp3</code> for local playback. The game will fallback to Roblox audio if not found.</div>
+        </div>
+      </div>
     </div>
 
-    <!-- Audio -->
-    <audio id="clickSfx" src="https://assetdelivery.roblox.com/v1/asset/?id=138083894"></audio>
-    <audio id="buySfx" src="https://assetdelivery.roblox.com/v1/asset/?id=911882310"></audio>
-    <audio id="selectSfx" src="https://assetdelivery.roblox.com/v1/asset/?id=138097048"></audio>
-    <audio id="music" src="https://assetdelivery.roblox.com/v1/asset/?id=1836788367" loop></audio>
+    <footer>Made for Jergan Studio — add more skins, upgrades, or tell me which achievement icons you want.</footer>
+  </div>
+
+  <!-- Audio elements (sources set by JS: prefer repo-relative sounds, fallback to Roblox URLs) -->
+  <audio id="clickSfx"></audio>
+  <audio id="buySfx"></audio>
+  <audio id="selectSfx"></audio>
+  <audio id="music" loop></audio>
 
 <script>
-let score = 0;
-let clickPower = 1;
-let x2Bought = false;
-let goldenBought = false;
+/* =========================
+   GAME STATE & DEFAULTS
+   ========================= */
+const STATE_KEY = "click_noob_v2";
+let state = {
+  score:0,
+  totalClicks:0,
+  clickPower:1,
+  autoCount:0,
+  superAuto:0,
+  rebirths:0,
+  rebirthMul:1,
+  upgradesOwned:{},
+  achievements:{},
+};
+const DEFAULTS = { upgradeBaseCosts: {
+  'upgrade_plus1': 20,
+  'auto': 100,
+  'x2': 500,
+  'gold': 2500,
+  'super': 5000,
+  'clickpack': 1200,
+  'mult10': 20000
+}};
+const shopItems = [
+  { id:'upgrade_plus1',   title:'+1 per click',     desc:'Adds +1 to click power', cost:DEFAULTS.upgradeBaseCosts.upgrade_plus1, onbuy:()=>{ state.clickPower += 1 } },
+  { id:'auto',            title:'Auto Clicker',     desc:'Each gives +1/sec', cost:DEFAULTS.upgradeBaseCosts.auto, onbuy:()=>{ state.autoCount += 1 } },
+  { id:'x2',              title:'x2 Clicks',        desc:'Multiply click power by 2', cost:DEFAULTS.upgradeBaseCosts.x2, onbuy:()=>{ state.clickPower *= 2 } },
+  { id:'gold',            title:'Golden Noob',      desc:'Multiply click power by 10 and changes skin', cost:DEFAULTS.upgradeBaseCosts.gold, onbuy:()=>{ state.clickPower *= 10; setNoobSkin('gold') } },
+  { id:'super',           title:'Super Auto',       desc:'Each gives +5/sec', cost:DEFAULTS.upgradeBaseCosts.super, onbuy:()=>{ state.superAuto += 1 } },
+  { id:'clickpack',       title:'Click Pack (+50)', desc:'Instant +50 score', cost:DEFAULTS.upgradeBaseCosts.clickpack, onbuy:()=>{ state.score += 50 } },
+  { id:'mult10',          title:'+10 Multiplier',   desc:'Permanent +10x to click power (expensive)', cost:DEFAULTS.upgradeBaseCosts.mult10, onbuy:()=>{ state.clickPower *= 10 } },
+];
+
+const rebirthBaseCost = 100000; // starting cost for first rebirth (can scale)
+const repoRaw = "https://raw.githubusercontent.com/jergan-studio/Click-a-noob/main/"; // user repo base (use for sounds if uploaded)
+const localNoobPath = "/mnt/data/A_2D_digital_illustration_features_a_Roblox_Noob_c.png"; // your uploaded local path (dev requested this)
 let musicStarted = false;
+let isMuted = false;
 
-// Load saved data
-window.onload = () => {
-    let save = localStorage.getItem("clickGame");
-    if (save) {
-        let data = JSON.parse(save);
-        score = data.score || 0;
-        clickPower = data.clickPower || 1;
-        x2Bought = data.x2Bought || false;
-        goldenBought = data.goldenBought || false;
-
-        if (goldenBought) {
-            document.getElementById("noob").src = "https://i.imgur.com/AQqWf7v.png"; // Golden Noob
-        }
-    }
-    updateUI();
+/* =========================
+   AUDIO SETUP (prefers repo sounds; fallbacks to Roblox)
+   ========================= */
+const audioElems = {
+  click: document.getElementById("clickSfx"),
+  buy: document.getElementById("buySfx"),
+  select: document.getElementById("selectSfx"),
+  music: document.getElementById("music")
+};
+const fallback = {
+  click: "https://assetdelivery.roblox.com/v1/asset/?id=138083894",
+  buy:   "https://assetdelivery.roblox.com/v1/asset/?id=911882310",
+  select:"https://assetdelivery.roblox.com/v1/asset/?id=138097048",
+  music: "https://assetdelivery.roblox.com/v1/asset/?id=1836788367"
 };
 
-// Start music after first click (autoplay fix)
-document.addEventListener("click", () => {
-    if (!musicStarted) {
-        const music = document.getElementById("music");
-        music.volume = 0.35;
-        music.play().catch(() => {});
-        musicStarted = true;
-    }
-});
+// attempt to set repo-relative source first (works if user uploads sounds to repo), else fallback to Roblox
+function setupAudioSources(){
+  // repo-relative file URLs (works on GitHub Pages)
+  const repoSources = {
+    click: repoRaw + "sounds/oof.wav",
+    buy:   repoRaw + "sounds/ding.wav",
+    select:repoRaw + "sounds/select.wav",
+    music: repoRaw + "sounds/music.mp3"
+  };
+  // assign repo sources first
+  audioElems.click.src = repoSources.click;
+  audioElems.buy.src = repoSources.buy;
+  audioElems.select.src = repoSources.select;
+  audioElems.music.src = repoSources.music;
 
-// Click noob
-document.getElementById("noob").addEventListener("click", () => {
-    score += clickPower;
+  // if loading fails, use fallback by listening for error events
+  Object.keys(audioElems).forEach(key=>{
+    audioElems[key].addEventListener('error', ()=>{ audioElems[key].src = fallback[key]; }, {once:true});
+  });
 
-    const sfx = document.getElementById("clickSfx");
-    sfx.currentTime = 0;
-    sfx.play();
+  // set volumes
+  audioElems.click.volume = 0.45;
+  audioElems.buy.volume = 0.45;
+  audioElems.select.volume = 0.35;
+  audioElems.music.volume = 0.30;
+}
+setupAudioSources();
 
-    updateUI();
-    saveGame();
-});
+/* =========================
+   UI HELPERS
+   ========================= */
+const el = id => document.getElementById(id);
+function updateUI(){
+  el("score").innerText = formatNum(state.score);
+  el("clickPowerDisplay").innerText = formatNum(state.clickPower);
+  el("autoCount").innerText = formatNum(state.autoCount);
+  el("superCount").innerText = formatNum(state.superAuto);
+  el("totalClicks").innerText = formatNum(state.totalClicks);
+  el("rebirthMulDisplay").innerText = formatNum(state.rebirthMul);
+  el("rebirthCostDisplay").innerText = formatNum(getRebirthCost());
+  el("rebirthCount").innerText = state.rebirths;
+  renderShop();
+  renderAchievements();
+}
+function formatNum(n){ return Math.floor(n).toLocaleString(); }
 
-// Button hover sound
-document.querySelectorAll("button").forEach(btn => {
-    btn.addEventListener("mouseenter", () => {
-        const sfx = document.getElementById("selectSfx");
-        sfx.currentTime = 0;
-        sfx.play();
+/* =========================
+   SHOP RENDERING & BUY
+   ========================= */
+const shopGrid = document.getElementById("shopGrid");
+function renderShop(){
+  shopGrid.innerHTML = "";
+  shopItems.forEach(item=>{
+    const owned = state.upgradesOwned[item.id] || 0;
+    const cost = getScaledCost(item.id, item.cost, owned);
+    const div = document.createElement("div");
+    div.className = "shop-item";
+    div.innerHTML = `<div class="shop-cost">${formatNum(cost)}</div>
+                     <h3>${item.title}${owned? `<span class="badge">${owned}x</span>`:''}</h3>
+                     <small>${item.desc}</small>`;
+    div.addEventListener("mouseenter", ()=>{ playSelect(); });
+    div.addEventListener("click", ()=>{
+      attemptBuy(item.id, cost, ()=>{
+        // apply buy effects (call item's onbuy)
+        item.onbuy();
+        state.upgradesOwned[item.id] = (state.upgradesOwned[item.id]||0) + 1;
+        // increase score if clickpack adds immediate
+        saveState(); updateUI(); playBuy();
+        checkAchievementOnBuy(item.id);
+      });
     });
-});
+    shopGrid.appendChild(div);
+  });
+}
 
-// Shop functions
-function buyX2() {
-    if (score >= 100 && !x2Bought) {
-        score -= 100;
-        clickPower = 2;
-        x2Bought = true;
+function getScaledCost(id, base, owned){
+  // basic exponential scaling per owned count
+  return Math.floor(base * Math.pow(1.6, (state.upgradesOwned[id]||0)));
+}
 
-        playBuySound();
-        updateUI();
-        saveGame();
+function attemptBuy(id, cost, onSuccess){
+  if(state.score >= cost){
+    state.score -= cost;
+    onSuccess();
+  } else {
+    // not enough; small shake + click sound to indicate
+    playSelect();
+  }
+}
+
+/* =========================
+   REBIRTHS
+   ========================= */
+function getRebirthCost(){
+  // scale cost with current rebirths
+  return Math.floor(rebirthBaseCost * Math.pow(2, state.rebirths));
+}
+
+function attemptRebirth(){
+  const cost = getRebirthCost();
+  if(state.score >= cost){
+    // perform rebirth
+    state.score = 0;
+    state.clickPower = 1;
+    state.autoCount = 0;
+    state.superAuto = 0;
+    state.upgradesOwned = {};
+    state.rebirths += 1;
+    state.rebirthMul *= 2;
+    // visual: set noob back to base skin
+    setNoobSkin('base');
+    playBuy();
+    saveState(); updateUI();
+    unlockAchievement('rebirth_first');
+  } else {
+    // not enough
+    playSelect();
+  }
+}
+
+/* =========================
+   CLICKS & AUTOS
+   ========================= */
+function addClicks(n){
+  state.score += n;
+  saveState(); updateUI();
+}
+
+function clickNoob(){
+  const gain = state.clickPower * state.rebirthMul;
+  state.score += gain;
+  state.totalClicks += 1;
+  // play click sound
+  playClick();
+  saveState(); updateUI();
+  checkClickAchievements();
+}
+
+/* Auto loops */
+setInterval(()=>{
+  // regular autos
+  state.score += (state.autoCount * state.rebirthMul);
+  // super autos give +5 each
+  state.score += (state.superAuto * 5 * state.rebirthMul);
+  saveState(); updateUI();
+}, 1000);
+
+/* =========================
+   ACHIEVEMENTS
+   ========================= */
+const achievements = [
+  { id:'click10', title:'Click Novice', desc:'Click 10 times', check:()=> state.totalClicks>=10 },
+  { id:'click100', title:'Click Expert', desc:'Click 100 times', check:()=> state.totalClicks>=100 },
+  { id:'buyFirst', title:'Shopper', desc:'Buy your first item', check:()=> Object.values(state.upgradesOwned).some(c=>c>0) },
+  { id:'rebirth_first', title:'Rebirther', desc:'Perform your first rebirth', check:()=> state.rebirths>=1 },
+  { id:'reach1000', title:'Collector', desc:'Reach 1,000 score', check:()=> state.score>=1000 }
+];
+function renderAchievements(){
+  const elA = document.getElementById("achievementsList");
+  elA.innerHTML = "";
+  achievements.forEach(a=>{
+    const unlocked = getAchievementState(a.id);
+    const div = document.createElement("div");
+    div.className = "ach";
+    div.textContent = `${a.title} — ${a.desc}`;
+    if(unlocked) div.style.opacity = "1"; else div.style.opacity = "0.45";
+    elA.appendChild(div);
+  });
+}
+function checkAchievements(){
+  achievements.forEach(a=>{
+    if(a.check() && !getAchievementState(a.id)){
+      setAchievementState(a.id,true);
+      // reward small bonus
+      state.score += 25;
+      playBuy();
+      saveState(); updateUI();
     }
+  });
+}
+function checkClickAchievements(){ checkAchievements(); }
+function checkAchievementOnBuy(id){ checkAchievements(); }
+
+function getAchievementState(id){ return !!state.achievements[id]; }
+function setAchievementState(id,val){ state.achievements[id]=!!val; }
+
+/* =========================
+   SOUNDS PLAY FUNCTIONS
+   ========================= */
+function playClick(){ if(isMuted) return; try{ audioElems.click.currentTime = 0; audioElems.click.play(); }catch(e){} }
+function playBuy(){ if(isMuted) return; try{ audioElems.buy.currentTime = 0; audioElems.buy.play(); }catch(e){} }
+function playSelect(){ if(isMuted) return; try{ audioElems.select.currentTime = 0; audioElems.select.play(); }catch(e){} }
+function toggleMute(){
+  isMuted = !isMuted;
+  document.getElementById("muteBtn").innerText = isMuted ? "🔈" : "🔊";
+  audioElems.music.muted = isMuted;
 }
 
-function buyGolden() {
-    if (score >= 500 && !goldenBought) {
-        score -= 500;
-        goldenBought = true;
+/* =========================
+   NOOB SKINS
+   ========================= */
+function setNoobSkin(skin){
+  const img = document.getElementById("noob");
+  if(skin==='gold'){
+    // gold skin (external img used as example)
+    img.src = "https://i.imgur.com/AQqWf7v.png";
+  } else {
+    // base: use user image from local upload (dev requested local path)
+    img.src = localNoobPath;
+    // if you prefer GitHub raw URL, replace with your repo raw:
+    // img.src = repoRaw + "noob.png";
+  }
+}
 
-        document.getElementById("noob").src = "https://i.imgur.com/AQqWf7v.png";
+/* =========================
+   SAVE / LOAD / EXPORT
+   ========================= */
+function saveState(){
+  localStorage.setItem(STATE_KEY, JSON.stringify(state));
+}
+function loadState(){
+  const s = localStorage.getItem(STATE_KEY);
+  if(s){ try{ state = JSON.parse(s); }catch(e){ console.error("corrupt save"); } }
+}
+function exportSave(){
+  const data = JSON.stringify(state);
+  const blob = new Blob([data], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = "click_a_noob_save.json";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+function importSavePrompt(){
+  const json = prompt("Paste save JSON here (or cancel):");
+  if(!json) return;
+  try{
+    const imported = JSON.parse(json);
+    state = imported;
+    saveState(); updateUI();
+    alert("Save imported.");
+  } catch(e){
+    alert("Invalid JSON.");
+  }
+}
 
-        playBuySound();
-        updateUI();
-        saveGame();
+/* =========================
+   BOOTSTRAP & EVENTS
+   ========================= */
+function init(){
+  loadState();
+  // ensure keys exist
+  state.upgradesOwned = state.upgradesOwned || {};
+  state.achievements = state.achievements || {};
+  // render shop & UI
+  renderShop();
+  updateUI();
+  // set initial skin
+  setNoobSkin('base');
+
+  // click handlers
+  document.getElementById("noob").addEventListener("click", ()=>{
+    // start music on first user interaction (autoplay policy)
+    if(!musicStarted){
+      audioElems.music.play().catch(()=>{});
+      musicStarted = true;
     }
-}
+    clickNoob();
+  });
 
-function playBuySound() {
-    const sfx = document.getElementById("buySfx");
-    sfx.currentTime = 0;
-    sfx.play();
-}
+  // UI buttons
+  document.getElementById("resetBtn").addEventListener("click", ()=>{
+    if(confirm("Reset all progress?")){ localStorage.removeItem(STATE_KEY); location.reload(); }
+  });
+  document.getElementById("muteBtn").addEventListener("click", ()=>{ toggleMute(); });
 
-// Update score display
-function updateUI() {
-    document.getElementById("score").innerText = "Clicks: " + score;
+  // periodically check achievements
+  setInterval(()=>{ checkAchievements(); }, 2000);
+  // autosaving
+  setInterval(()=>{ saveState(); }, 3000);
 }
+init();
 
-// Save game
-function saveGame() {
-    localStorage.setItem("clickGame", JSON.stringify({
-        score,
-        clickPower,
-        x2Bought,
-        goldenBought
-    }));
+/* =========================
+   UTIL: less important helper
+   ========================= */
+function attemptBuyHelper(cost,callback){
+  if(state.score >= cost){ state.score -= cost; callback(); saveState(); updateUI(); return true; }
+  playSelect(); return false;
 }
 </script>
-
 </body>
 </html>
