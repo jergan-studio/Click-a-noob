@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Click the Noob</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            color: #333;
+            margin-top: 20px;
+        }
+
+        #noob {
+            width: 100px;
+            height: 180px;
+            margin: 20px auto;
+            cursor: pointer;
+            background-color: transparent;
+            position: relative;
+            transition: transform 0.1s ease;
+        }
+
+        #noob div {
+            position: absolute;
+            transition: background-color 0.1s ease;
+        }
+
+        .head {
+            width: 80px;
+            height: 80px;
+            background-color: #ffff00;
+            border: 2px solid #000;
+            border-radius: 50%;
+            top: 0;
+            left: 10px;
+        }
+
+        .torso {
+            width: 80px;
+            height: 60px;
+            background-color: #00a2ff;
+            border: 2px solid #000;
+            top: 80px;
+            left: 10px;
+        }
+
+        .left-arm {
+            width: 30px;
+            height: 60px;
+            background-color: #ffff00;
+            border: 2px solid #000;
+            top: 80px;
+            left: -25px;
+            transform-origin: top center;
+            animation: arm-swing 1s linear infinite alternate;
+        }
+
+        .right-arm {
+            width: 30px;
+            height: 60px;
+            background-color: #ffff00;
+            border: 2px solid #000;
+            top: 80px;
+            right: -25px;
+            transform-origin: top center;
+            animation: arm-swing 1s linear infinite alternate-reverse;
+        }
+
+        .left-leg {
+            width: 30px;
+            height: 70px;
+            background-color: #00a2ff;
+            border: 2px solid #000;
+            top: 140px;
+            left: 10px;
+        }
+
+        .right-leg {
+            width: 30px;
+            height: 70px;
+            background-color: #00a2ff;
+            border: 2px solid #000;
+            top: 140px;
+            right: 10px;
+        }
+
+        #score {
+            font-size: 24px;
+            color: #333;
+            margin-top: 20px;
+        }
+
+        @keyframes arm-swing {
+            0% {
+                transform: rotate(-15deg);
+            }
+            100% {
+                transform: rotate(15deg);
+            }
+        }
+
+        .hurt {
+            background-color: #ff0000 !important;
+        }
+    </style>
+</head>
+<body>
+    <h1>Click the Roblox Noob!</h1>
+    <div id="noob">
+        <div class="head"></div>
+        <div class="torso"></div>
+        <div class="left-arm"></div>
+        <div class="right-arm"></div>
+        <div class="left-leg"></div>
+        <div class="right-leg"></div>
+    </div>
+    <div id="score">Score: 0</div>
+
+    <script>
+        let score = 0;
+        const noob = document.getElementById('noob');
+        const scoreDisplay = document.getElementById('score');
+
+        noob.addEventListener('click', function() {
+            score++;
+            scoreDisplay.textContent = 'Score: ' + score;
+
+            // "Hurt" effect
+            noob.classList.add('hurt');
+            setTimeout(() => {
+                noob.classList.remove('hurt');
+            }, 100); // Remove the class after 100ms
+        });
+    </script>
+</body>
+</html>
