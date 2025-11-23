@@ -49,8 +49,8 @@
     <h1>Click-a-Noob</h1>
     <div id="score">Clicks: 0</div>
 
-    <!-- Classic blue/yellow noob model (animated GIF) -->
-    <img id="noob" src="https://i.imgur.com/7cU5gkC.gif">
+    <!-- Your noob.png from GitHub -->
+    <img id="noob" src="https://raw.githubusercontent.com/jergan-studio/Click-a-noob/main/noob.png">
 
     <div class="shop">
         <h2>Shop</h2>
@@ -64,35 +64,41 @@
     <audio id="clickSfx" src="https://assetdelivery.roblox.com/v1/asset/?id=138083894"></audio>
     <audio id="buySfx" src="https://assetdelivery.roblox.com/v1/asset/?id=911882310"></audio>
     <audio id="selectSfx" src="https://assetdelivery.roblox.com/v1/asset/?id=138097048"></audio>
-    <audio id="music" src="https://assetdelivery.roblox.com/v1/asset/?id=1836788367" loop autoplay></audio>
+    <audio id="music" src="https://assetdelivery.roblox.com/v1/asset/?id=1836788367" loop></audio>
 
 <script>
 let score = 0;
 let clickPower = 1;
 let x2Bought = false;
 let goldenBought = false;
+let musicStarted = false;
 
 // Load saved data
 window.onload = () => {
     let save = localStorage.getItem("clickGame");
     if (save) {
         let data = JSON.parse(save);
-        score = data.score;
-        clickPower = data.clickPower;
-        x2Bought = data.x2Bought;
-        goldenBought = data.goldenBought;
+        score = data.score || 0;
+        clickPower = data.clickPower || 1;
+        x2Bought = data.x2Bought || false;
+        goldenBought = data.goldenBought || false;
 
         if (goldenBought) {
-            document.getElementById("noob").src = "https://i.imgur.com/AQqWf7v.png"; // golden noob
+            document.getElementById("noob").src = "https://i.imgur.com/AQqWf7v.png"; // Golden Noob
         }
     }
     updateUI();
-
-    // Start background music
-    const music = document.getElementById("music");
-    music.volume = 0.35;
-    music.play().catch(() => {});
 };
+
+// Start music after first click (autoplay fix)
+document.addEventListener("click", () => {
+    if (!musicStarted) {
+        const music = document.getElementById("music");
+        music.volume = 0.35;
+        music.play().catch(() => {});
+        musicStarted = true;
+    }
+});
 
 // Click noob
 document.getElementById("noob").addEventListener("click", () => {
@@ -141,7 +147,6 @@ function buyGolden() {
     }
 }
 
-// Buy sound
 function playBuySound() {
     const sfx = document.getElementById("buySfx");
     sfx.currentTime = 0;
