@@ -9,16 +9,28 @@
             font-family: Arial;
             text-align: center;
         }
+
+        /* --- NOOB ANIMATION --- */
         #noob {
             width: 150px;
             cursor: pointer;
             margin-top: 30px;
+            animation: wiggle 1.1s infinite ease-in-out;
         }
+
+        @keyframes wiggle {
+            0% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(2deg) scale(1.03); }
+            50% { transform: rotate(0deg) scale(1); }
+            75% { transform: rotate(-2deg) scale(1.03); }
+            100% { transform: rotate(0deg) scale(1); }
+        }
+
         .shop-item {
             background: #333;
             padding: 10px;
             margin: 10px auto;
-            width: 250px;
+            width: 300px;
             border-radius: 10px;
             cursor: pointer;
         }
@@ -33,74 +45,154 @@
 
     <h2>Score: <span id="score">0</span></h2>
 
-    <!-- YOUR OLD NOOB MODEL -->
+    <!-- YOUR NOOB IMAGE -->
     <img id="noob" src="noob.png">
 
     <h2>Store</h2>
 
-    <div class="shop-item" onclick="buyUpgrade()">
-        +1 per click — Cost: <span id="upgradeCost">20</span>
-    </div>
+    <!-- OLD UPGRADES -->
+    <div class="shop-item" onclick="buyUpgrade()">+1 per click — Cost: <span id="upgradeCost">20</span></div>
+    <div class="shop-item" onclick="buyAuto()">Auto Clicker — Cost: <span id="autoCost">100</span></div>
 
-    <div class="shop-item" onclick="buyAuto()">
-        Auto-Clicker — Cost: <span id="autoCost">100</span>
-    </div>
+    <!-- NEW UPGRADES -->
+    <div class="shop-item" onclick="buyX2()">x2 Click Multiplier — Cost: <span id="x2Cost">500</span></div>
+    <div class="shop-item" onclick="buyGolden()">Golden Noob (10× per click) — Cost: <span id="goldCost">2500</span></div>
+    <div class="shop-item" onclick="buySuperAuto()">Super Auto Clicker (5/sec) — Cost: <span id="superCost">5000</span></div>
+    <div class="shop-item" onclick="prestige()">Prestige Reset (+2x Permanent Boost) — Cost: <span id="prestigeCost">50000</span></div>
 
 <script>
+    // --------------------
+    // LOAD SAVE DATA
+    // --------------------
     let score = Number(localStorage.getItem("score")) || 0;
     let clickPower = Number(localStorage.getItem("clickPower")) || 1;
-    let upgradeCost = Number(localStorage.getItem("upgradeCost")) || 20;
-
     let autoClickers = Number(localStorage.getItem("autoClickers")) || 0;
-    let autoCost = Number(localStorage.getItem("autoCost")) || 100;
+    let superAuto = Number(localStorage.getItem("superAuto")) || 0;
+    let prestigeBoost = Number(localStorage.getItem("prestigeBoost")) || 1;
 
+    // COSTS
+    let upgradeCost = Number(localStorage.getItem("upgradeCost")) || 20;
+    let autoCost = Number(localStorage.getItem("autoCost")) || 100;
+    let x2Cost = Number(localStorage.getItem("x2Cost")) || 500;
+    let goldCost = Number(localStorage.getItem("goldCost")) || 2500;
+    let superCost = Number(localStorage.getItem("superCost")) || 5000;
+    let prestigeCost = 50000;
+
+    // DISPLAY SAVED VALUES
     document.getElementById("score").textContent = score;
     document.getElementById("upgradeCost").textContent = upgradeCost;
     document.getElementById("autoCost").textContent = autoCost;
+    document.getElementById("x2Cost").textContent = x2Cost;
+    document.getElementById("goldCost").textContent = goldCost;
+    document.getElementById("superCost").textContent = superCost;
+    document.getElementById("prestigeCost").textContent = prestigeCost;
 
+    // SAVE FUNCTION
     function saveGame() {
         localStorage.setItem("score", score);
         localStorage.setItem("clickPower", clickPower);
-        localStorage.setItem("upgradeCost", upgradeCost);
         localStorage.setItem("autoClickers", autoClickers);
+        localStorage.setItem("superAuto", superAuto);
+        localStorage.setItem("prestigeBoost", prestigeBoost);
+        localStorage.setItem("upgradeCost", upgradeCost);
         localStorage.setItem("autoCost", autoCost);
+        localStorage.setItem("x2Cost", x2Cost);
+        localStorage.setItem("goldCost", goldCost);
+        localStorage.setItem("superCost", superCost);
     }
 
+    // CLICK NOOB
     document.getElementById("noob").onclick = function () {
-        score += clickPower;
+        score += clickPower * prestigeBoost;
         document.getElementById("score").textContent = score;
         saveGame();
     };
 
+    // +1 UPGRADE
     function buyUpgrade() {
         if (score >= upgradeCost) {
             score -= upgradeCost;
             clickPower++;
             upgradeCost = Math.floor(upgradeCost * 1.5);
-            document.getElementById("score").textContent = score;
-            document.getElementById("upgradeCost").textContent = upgradeCost;
-            saveGame();
+            updateDisplay();
         }
     }
 
+    // AUTO CLICKER
     function buyAuto() {
         if (score >= autoCost) {
             score -= autoCost;
             autoClickers++;
             autoCost = Math.floor(autoCost * 1.8);
-            document.getElementById("score").textContent = score;
-            document.getElementById("autoCost").textContent = autoCost;
-            saveGame();
+            updateDisplay();
         }
     }
 
-    setInterval(() => {
-        if (autoClickers > 0) {
-            score += autoClickers;
-            document.getElementById("score").textContent = score;
-            saveGame();
+    // x2 MULTIPLIER
+    function buyX2() {
+        if (score >= x2Cost) {
+            score -= x2Cost;
+            clickPower *= 2;
+            x2Cost = Math.floor(x2Cost * 2.4);
+            updateDisplay();
         }
+    }
+
+    // GOLDEN NOOB (10× PER CLICK)
+    function buyGolden() {
+        if (score >= goldCost) {
+            score -= goldCost;
+            clickPower *= 10;
+            goldCost = Math.floor(goldCost * 3);
+            updateDisplay();
+        }
+    }
+
+    // SUPER AUTO CLICKER (5 PER SEC)
+    function buySuperAuto() {
+        if (score >= superCost) {
+            score -= superCost;
+            superAuto++;
+            superCost = Math.floor(superCost * 2.5);
+            updateDisplay();
+        }
+    }
+
+    // PRESTIGE SYSTEM
+    function prestige() {
+        if (score >= prestigeCost) {
+            score = 0;
+            clickPower = 1;
+            autoClickers = 0;
+            superAuto = 0;
+            prestigeBoost *= 2;
+
+            updateDisplay();
+        }
+    }
+
+    // UPDATE DISPLAY
+    function updateDisplay() {
+        document.getElementById("score").textContent = score;
+        document.getElementById("upgradeCost").textContent = upgradeCost;
+        document.getElementById("autoCost").textContent = autoCost;
+        document.getElementById("x2Cost").textContent = x2Cost;
+        document.getElementById("goldCost").textContent = goldCost;
+        document.getElementById("superCost").textContent = superCost;
+        saveGame();
+    }
+
+    // AUTO CLICK LOOPS
+    setInterval(() => {
+        score += autoClickers * prestigeBoost;
+        updateDisplay();
     }, 1000);
+
+    setInterval(() => {
+        score += (superAuto * 5) * prestigeBoost;
+        updateDisplay();
+    }, 1000);
+
 </script>
 
 </body>
