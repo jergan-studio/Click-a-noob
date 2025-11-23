@@ -54,7 +54,6 @@
       <!-- LEFT: Avatar / Achievements -->
       <div>
         <div class="card">
-          <!-- Use GitHub-hosted noob.png so it shows on GitHub Pages -->
           <img id="noob" src="https://raw.githubusercontent.com/jergan-studio/Click-a-noob/main/noob.png" alt="noob">
           <div class="meta">
             <div>Auto: <span id="autoCount">0</span></div>
@@ -94,7 +93,7 @@
             <button onclick="exportSave()">Export Save</button>
             <button onclick="importSavePrompt()">Import Save</button>
           </div>
-          <div class="small muted" style="margin-top:8px">Tip: upload sounds to your repo at <code>sounds/</code> (oof.wav, ding.wav, select.wav, music.mp3). The game will fallback to Roblox audio if not found. Music will start after your first click.</div>
+          <div class="small muted" style="margin-top:8px">Tip: upload sounds to your repo at <code>sounds/</code> (oof.wav, ding.wav, select.wav, bgm.mp3). Music will start after your first click.</div>
         </div>
       </div>
     </div>
@@ -102,7 +101,7 @@
     <footer>Made for Jergan Studio — ask if you want more skins / achievements / leaderboards.</footer>
   </div>
 
-  <!-- Audio elements (we will set sources in JS; music uses your uploaded file path) -->
+  <!-- Audio elements -->
   <audio id="clickSfx"></audio>
   <audio id="buySfx"></audio>
   <audio id="selectSfx"></audio>
@@ -132,12 +131,12 @@ const shopItems = [
 
 const rebirthBaseCost = 100000;
 const repoRaw = "https://raw.githubusercontent.com/jergan-studio/Click-a-noob/main/";
-const musicLocalPath = "/mnt/data/background-music-438663.mp3"; // << your uploaded music file path (will be converted)
+const musicLocalPath = repoRaw + "sounds/bgm.mp3"; // full version
 let musicStarted = false;
 let isMuted = false;
 
 /* =========================
-   AUDIO SETUP (try repo sounds, fallback to Roblox)
+   AUDIO SETUP — FULL VERSION
    ========================= */
 const audioElems = {
   click: document.getElementById("clickSfx"),
@@ -146,6 +145,7 @@ const audioElems = {
   music: document.getElementById("music")
 };
 
+// Fallback URLs
 const fallback = {
   click: "https://assetdelivery.roblox.com/v1/asset/?id=138083894",
   buy:   "https://assetdelivery.roblox.com/v1/asset/?id=911882310",
@@ -158,22 +158,29 @@ function setupAudioSources(){
     click: repoRaw + "sounds/oof.wav",
     buy:   repoRaw + "sounds/ding.wav",
     select:repoRaw + "sounds/select.wav",
-    music: musicLocalPath // use uploaded file path (system will transform this)
+    music: musicLocalPath
   };
-  audioElems.click.src = repoSources.click;
-  audioElems.buy.src = repoSources.buy;
-  audioElems.select.src = repoSources.select;
-  audioElems.music.src = repoSources.music;
 
-  // on error, switch to fallback
+  audioElems.click.src   = repoSources.click;
+  audioElems.buy.src     = repoSources.buy;
+  audioElems.select.src  = repoSources.select;
+  audioElems.music.src   = repoSources.music;
+
+  audioElems.click.volume  = 0.45;
+  audioElems.buy.volume    = 0.45;
+  audioElems.select.volume = 0.35;
+  audioElems.music.volume  = 0.30;
+
   Object.keys(audioElems).forEach(key=>{
-    audioElems[key].addEventListener('error', ()=>{ audioElems[key].src = fallback[key]; }, {once:true});
+    audioElems[key].addEventListener('error', ()=>{
+      audioElems[key].src = fallback[key];
+    }, {once:true});
   });
 
-  audioElems.click.volume = 0.45;
-  audioElems.buy.volume = 0.45;
-  audioElems.select.volume = 0.35;
-  audioElems.music.volume = 0.30;
+  audioElems.music.addEventListener('ended', ()=>{
+    audioElems.music.currentTime = 0;
+    audioElems.music.play();
+  });
 }
 setupAudioSources();
 
@@ -221,9 +228,7 @@ function renderShop(){
     shopGrid.appendChild(div);
   });
 }
-function getScaledCost(base, owned){
-  return Math.floor(base * Math.pow(1.55, owned));
-}
+function getScaledCost(base, owned){ return Math.floor(base * Math.pow(1.55, owned)); }
 function attemptBuy(cost){ if(state.score >= cost){ state.score -= cost; return true; } playSelect(); return false; }
 
 /* =========================
@@ -286,7 +291,7 @@ function toggleMute(){ isMuted = !isMuted; document.getElementById("muteBtn").in
 function setNoobSkin(skin){
   const img = document.getElementById("noob");
   if(skin === 'gold') img.src = "https://i.imgur.com/AQqWf7v.png";
-  else img.src = repoRaw + "noob.png"; // use GitHub raw noob.png
+  else img.src = repoRaw + "noob.png";
 }
 
 /* =========================
@@ -295,7 +300,7 @@ function setNoobSkin(skin){
 function saveState(){ localStorage.setItem(STATE_KEY, JSON.stringify(state)); }
 function loadState(){ const s = localStorage.getItem(STATE_KEY); if(s){ try{ state = JSON.parse(s); }catch(e){ console.error("corrupt save"); }}}
 function exportSave(){ const data = JSON.stringify(state); const blob = new Blob([data], {type:"application/json"}); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = "click_a_noob_save.json"; a.click(); URL.revokeObjectURL(url); }
-function importSavePrompt(){ const json = prompt("Paste save JSON here (or cancel):"); if(!json) return; try{ const imported = JSON.parse(json); state = imported; saveState(); updateUI(); alert("Save imported."); } catch(e){ alert("Invalid JSON."); }}
+function importSavePrompt(){ const json = prompt("Paste save JSON here (or cancel):"); if(!json) return; try{ const imported = JSON.parse(json); state = imported; saveState(); updateUI(); alert("Save imported."); } catch(e){ alert("Invalid JSON.");}}
 
 /* =========================
    BOOTSTRAP
@@ -306,7 +311,7 @@ function init(){
   renderShop(); updateUI();
   setNoobSkin('base');
 
-  // start music only after first user click (autoplay policy)
+  // start music after first click
   document.getElementById("noob").addEventListener("click", ()=>{
     if(!musicStarted){
       audioElems.music.play().catch(()=>{});
