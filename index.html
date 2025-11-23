@@ -7,6 +7,7 @@
   <style>
     :root{
       --bg:#0f1113;--panel:#121417;--accent:#ffd24a;--muted:#9aa3b2;--card:#17191b;
+      --btn-safe:#4caf50;--btn-danger:#f44336;--btn-neutral:#2196f3;
     }
     html,body{height:100%;margin:0;background:var(--bg);color:#eef;font-family:Inter,Arial,Helvetica,sans-serif}
     .wrap{max-width:1100px;margin:18px auto;padding:16px}
@@ -34,6 +35,10 @@
     footer{margin-top:18px;color:var(--muted);font-size:13px}
     .badge{display:inline-block;padding:4px 6px;background:#163f2b;color:#baf7cf;border-radius:6px;font-weight:700;margin-left:6px}
     input[type=email]{width:100%; padding:6px 8px; border-radius:6px; border:none;}
+    .admin-btn{padding:6px 10px;border:none;border-radius:6px;margin:3px;cursor:pointer;font-weight:700;color:#fff;}
+    .btn-safe{background:var(--btn-safe);}
+    .btn-danger{background:var(--btn-danger);}
+    .btn-neutral{background:var(--btn-neutral);}
   </style>
 </head>
 <body>
@@ -52,7 +57,7 @@
     </header>
 
     <div class="main">
-      <!-- LEFT: Avatar / Achievements -->
+      <!-- LEFT -->
       <div>
         <div class="card">
           <img id="noob" src="https://raw.githubusercontent.com/jergan-studio/Click-a-noob/main/noob.png" alt="noob">
@@ -79,7 +84,7 @@
         </div>
       </div>
 
-      <!-- RIGHT: Shop & Upgrades -->
+      <!-- RIGHT -->
       <div>
         <div class="card">
           <h3>Shop</h3>
@@ -94,10 +99,10 @@
             <button onclick="exportSave()">Export Save</button>
             <button onclick="importSavePrompt()">Import Save</button>
           </div>
-          <div class="small muted" style="margin-top:8px">Tip: upload sounds to your repo at <code>sounds/</code> (oof.wav, ding.wav, select.wav, bgm.mp3). Music will start after your first click.</div>
+          <div class="small muted" style="margin-top:8px">Tip: upload sounds to your repo at <code>sounds/</code> (oof.wav, ding.wav, select.wav, bgm.mp3). Music starts after first click.</div>
         </div>
 
-        <!-- Email / Admin Panel -->
+        <!-- Admin -->
         <div class="card" style="margin-top:12px">
           <h3>Enter Email to Unlock Admin Panel</h3>
           <input type="email" id="adminEmail" placeholder="Enter email">
@@ -108,8 +113,8 @@
         <div class="card" id="adminCard" style="display:none; margin-top:12px">
           <h3>Admin Panel</h3>
           <div>
-            <button onclick="showAdminSection('global')">Global</button>
-            <button onclick="showAdminSection('local')">Local</button>
+            <button onclick="showAdminSection('global')" class="admin-btn btn-neutral">Global</button>
+            <button onclick="showAdminSection('local')" class="admin-btn btn-neutral">Local</button>
           </div>
           <div id="adminContent" style="margin-top:8px; background:#111; padding:8px; border-radius:8px; border:1px solid rgba(255,255,255,0.02); color:#fff; font-size:14px">
             Select a section above.
@@ -129,16 +134,13 @@
   <audio id="music" loop></audio>
 
 <script>
-/* =========================
-   STATE & CONFIG
-   ========================= */
+/* ========================= STATE & CONFIG ========================= */
 const STATE_KEY="click_noob_v3";
 let state={score:0,totalClicks:0,clickPower:1,autoCount:0,superAuto:0,rebirths:0,rebirthMul:1,upgradesOwned:{},achievements:{}};
 const shopItems=[
 {id:'upgrade_plus1',title:'+1 per click',desc:'Adds +1 to click power',baseCost:20,onbuy:()=>{state.clickPower+=1}},
 {id:'auto',title:'Auto Clicker',desc:'Each gives +1/sec',baseCost:100,onbuy:()=>{state.autoCount+=1}},
 {id:'x2',title:'x2 Clicks',desc:'Multiply click power by 2',baseCost:500,onbuy:()=>{state.clickPower*=2}},
-{id:'gold',title:'Golden Noob',desc:'Multiply click power by 10 and changes skin',baseCost:2500,onbuy:()=>{state.clickPower*=10;setNoobSkin('gold')}},
 {id:'super',title:'Super Auto',desc:'Each gives +5/sec',baseCost:5000,onbuy:()=>{state.superAuto+=1}},
 {id:'clickpack',title:'Click Pack (+50)',desc:'Instant +50 score',baseCost:1200,onbuy:()=>{state.score+=50}},
 {id:'mult10',title:'+10 Multiplier',desc:'Permanent +10x to click power',baseCost:20000,onbuy:()=>{state.clickPower*=10}}
@@ -148,9 +150,7 @@ const repoRaw="https://raw.githubusercontent.com/jergan-studio/Click-a-noob/main
 const musicLocalPath=repoRaw+"sounds/bgm.mp3";
 let musicStarted=false,isMuted=false;
 
-/* =========================
-   AUDIO SETUP
-   ========================= */
+/* ========================= AUDIO ========================= */
 const audioElems={click:document.getElementById("clickSfx"),buy:document.getElementById("buySfx"),select:document.getElementById("selectSfx"),music:document.getElementById("music")};
 const fallback={click:"https://assetdelivery.roblox.com/v1/asset/?id=138083894",buy:"https://assetdelivery.roblox.com/v1/asset/?id=911882310",select:"https://assetdelivery.roblox.com/v1/asset/?id=138097048",music:"https://assetdelivery.roblox.com/v1/asset/?id=1836788367"};
 function setupAudioSources(){
@@ -162,81 +162,59 @@ function setupAudioSources(){
 }
 setupAudioSources();
 
-/* =========================
-   UI HELPERS
-   ========================= */
+/* ========================= UI HELPERS ========================= */
 const el=id=>document.getElementById(id);
 function formatNum(n){return Math.floor(n).toLocaleString();}
 function updateUI(){el("score").innerText=formatNum(state.score);el("clickPowerDisplay").innerText=formatNum(state.clickPower);el("autoCount").innerText=formatNum(state.autoCount);el("superCount").innerText=formatNum(state.superAuto);el("totalClicks").innerText=formatNum(state.totalClicks);el("rebirthMulDisplay").innerText=formatNum(state.rebirthMul);el("rebirthCostDisplay").innerText=formatNum(getRebirthCost());el("rebirthCount").innerText=state.rebirths;renderShop();renderAchievements();}
 
-/* =========================
-   SHOP LOGIC
-   ========================= */
+/* ========================= SHOP ========================= */
 const shopGrid=el("shopGrid");
-function renderShop(){shopGrid.innerHTML="";shopItems.forEach(item=>{const owned=state.upgradesOwned[item.id]||0;const cost=getScaledCost(item.baseCost,owned);const div=document.createElement("div");div.className="shop-item";div.innerHTML=`<div class="shop-cost">${formatNum(cost)}</div><h3>${item.title}${owned? `<span class="badge">${owned}x</span>`:''}</h3><small>${item.desc}</small>`;div.addEventListener("mouseenter",()=>{playSelect();});div.addEventListener("click",()=>{if(attemptBuy(cost)){item.onbuy();state.upgradesOwned[item.id]=(state.upgradesOwned[item.id]||0)+1;saveState();updateUI();playBuy();checkAchievementOnBuy(item.id);}});shopGrid.appendChild(div);});}
-function getScaledCost(base,owned){return Math.floor(base*Math.pow(1.55,owned));}
-function attemptBuy(cost){if(state.score>=cost){state.score-=cost;return true;}playSelect();return false;}
+function renderShop(){shopGrid.innerHTML="";shopItems.forEach(item=>{const owned=state.upgradesOwned[item.id]||0;const cost=Math.floor(item.baseCost*Math.pow(1.55,owned));const div=document.createElement("div");div.className="shop-item";div.innerHTML=`<div class="shop-cost">${formatNum(cost)}</div><h3>${item.title}${owned? `<span class="badge">${owned}x</span>`:''}</h3><small>${item.desc}</small>`;div.addEventListener("mouseenter",()=>{playSelect();});div.addEventListener("click",()=>{if(state.score>=cost){state.score-=cost;item.onbuy();state.upgradesOwned[item.id]=(state.upgradesOwned[item.id]||0)+1;saveState();updateUI();playBuy();checkAchievementOnBuy(item.id);}});shopGrid.appendChild(div);});}
 
-/* =========================
-   REBIRTH
-   ========================= */
+/* ========================= REBIRTH ========================= */
 function getRebirthCost(){return Math.floor(rebirthBaseCost*Math.pow(2,state.rebirths));}
 function attemptRebirth(){const cost=getRebirthCost();if(state.score>=cost){state.score=0;state.clickPower=1;state.autoCount=0;state.superAuto=0;state.upgradesOwned={};state.rebirths+=1;state.rebirthMul*=2;setNoobSkin('base');saveState();updateUI();playBuy();unlockAchievement('rebirth_first');}else playSelect();}
 
-/* =========================
-   CLICKS & AUTOS
-   ========================= */
+/* ========================= CLICKS ========================= */
 function addClicks(n){state.score+=n;saveState();updateUI();}
 function clickNoob(){const gain=state.clickPower*state.rebirthMul;state.score+=gain;state.totalClicks+=1;playClick();saveState();updateUI();checkClickAchievements();}
 setInterval(()=>{state.score+=(state.autoCount*state.rebirthMul)+(state.superAuto*5*state.rebirthMul);saveState();updateUI();},1000);
 
-/* =========================
-   ACHIEVEMENTS
-   ========================= */
+/* ========================= ACHIEVEMENTS ========================= */
 const achievements=[{id:'click10',title:'Click Novice',desc:'Click 10 times',check:()=>state.totalClicks>=10},{id:'click100',title:'Click Expert',desc:'Click 100 times',check:()=>state.totalClicks>=100},{id:'buyFirst',title:'Shopper',desc:'Buy your first item',check:()=>Object.values(state.upgradesOwned).some(c=>c>0)},{id:'rebirth_first',title:'Rebirther',desc:'Perform your first rebirth',check:()=>state.rebirths>=1},{id:'reach1000',title:'Collector',desc:'Reach 1,000 score',check:()=>state.score>=1000}];
 function renderAchievements(){const elA=el("achievementsList");elA.innerHTML="";achievements.forEach(a=>{const unlocked=!!state.achievements[a.id];const div=document.createElement("div");div.className="ach";div.textContent=`${a.title} — ${a.desc}`;div.style.opacity=unlocked?"1":"0.45";elA.appendChild(div);});}
 function checkAchievements(){achievements.forEach(a=>{if(a.check()&&!state.achievements[a.id]){state.achievements[a.id]=true;state.score+=25;playBuy();saveState();updateUI();}});}
 function checkClickAchievements(){checkAchievements();}
 function checkAchievementOnBuy(id){checkAchievements();}
 
-/* =========================
-   SOUND HELPERS
-   ========================= */
+/* ========================= SOUND ========================= */
 function playClick(){if(isMuted)return;try{audioElems.click.currentTime=0;audioElems.click.play();}catch(e){}}
 function playBuy(){if(isMuted)return;try{audioElems.buy.currentTime=0;audioElems.buy.play();}catch(e){}}
 function playSelect(){if(isMuted)return;try{audioElems.select.currentTime=0;audioElems.select.play();}catch(e){}}
 function toggleMute(){isMuted=!isMuted;el("muteBtn").innerText=isMuted?"🔈":"🔊";audioElems.music.muted=isMuted;}
 
-/* =========================
-   SKINS
-   ========================= */
-function setNoobSkin(skin){const img=el("noob");if(skin==='gold')img.src="https://i.imgur.com/AQqWf7v.png";else img.src=repoRaw+"noob.png";}
+/* ========================= SKINS ========================= */
+function setNoobSkin(skin){const img=el("noob");img.src=repoRaw+"noob.png";}
 
-/* =========================
-   SAVE / LOAD
-   ========================= */
+/* ========================= SAVE / LOAD ========================= */
 function saveState(){localStorage.setItem(STATE_KEY,JSON.stringify(state));}
 function loadState(){const s=localStorage.getItem(STATE_KEY);if(s){try{state=JSON.parse(s);}catch(e){console.error("corrupt save");}}}
 function exportSave(){const data=JSON.stringify(state);const blob=new Blob([data],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="click_a_noob_save.json";a.click();URL.revokeObjectURL(url);}
 function importSavePrompt(){const json=prompt("Paste save JSON here (or cancel):");if(!json)return;try{state=JSON.parse(json);saveState();updateUI();alert("Save imported.");}catch(e){alert("Invalid JSON.");}}
 
-/* =========================
-   ADMIN PANEL
-   ========================= */
+/* ========================= ADMIN PANEL ========================= */
 const adminEmailCorrect="jose343lopez22@gmail.com";
 function checkAdminEmail(){const input=el("adminEmail").value.trim();const status=el("emailStatus");if(input.toLowerCase()===adminEmailCorrect){el("adminCard").style.display="block";status.innerText="Admin panel unlocked!";status.style.color="#0f0";}else{status.innerText="Incorrect email.";status.style.color="#f55";el("adminCard").style.display="none";}}
-function showAdminSection(section){
-  const content=el("adminContent");
-  if(section==="global"){content.innerHTML=`
-    <strong>Global Section</strong><br>
-    <button onclick="adminAddScore(100000)">Give 100,000 Score</button>
-    <button onclick="adminMultiplyClick(10)">Multiply Click Power x10</button>
-    <button onclick="adminResetGame()">Reset Entire Game</button>`;}
-  else if(section==="local"){content.innerHTML=`
-    <strong>Local Section</strong><br>
-    <button onclick="adminAddScoreLocal(1000)">Give +1,000 Score</button>
-    <button onclick="adminAddClicksLocal(100)">Add +100 Clicks</button>
-    <button onclick="adminResetLocal()">Reset My Save</button>`;}
+function showAdminSection(section){const content=el("adminContent");if(section==="global"){content.innerHTML=`
+<strong>Global Section</strong><br>
+<button class="admin-btn btn-safe" onclick="adminAddScore(100000)">Give 100,000 Score</button>
+<button class="admin-btn btn-safe" onclick="adminMultiplyClick(10)">Multiply Click Power x10</button>
+<button class="admin-btn btn-danger" onclick="adminResetGame()">Reset Entire Game</button>`;}
+else if(section==="local"){content.innerHTML=`
+<strong>Local Section</strong><br>
+<button class="admin-btn btn-safe" onclick="adminAddScoreLocal(1000)">Give +1,000 Score</button>
+<button class="admin-btn btn-safe" onclick="adminAddClicksLocal(100)">Add +100 Clicks</button>
+<button class="admin-btn btn-danger" onclick="adminResetLocal()">Reset My Save</button>`;}
 }
 function adminAddScore(amount){state.score+=amount;saveState();updateUI();alert(`Added ${amount} score globally!`);}
 function adminMultiplyClick(multiplier){state.clickPower*=multiplier;saveState();updateUI();alert(`Click power multiplied by ${multiplier} globally!`);}
@@ -245,9 +223,7 @@ function adminAddScoreLocal(amount){state.score+=amount;saveState();updateUI();a
 function adminAddClicksLocal(amount){state.totalClicks+=amount;state.score+=amount*state.clickPower*state.rebirthMul;saveState();updateUI();alert(`Added ${amount} clicks locally!`);}
 function adminResetLocal(){if(confirm("Are you sure you want to reset your save?")){localStorage.removeItem(STATE_KEY);location.reload();}}
 
-/* =========================
-   BOOTSTRAP
-   ========================= */
+/* ========================= BOOTSTRAP ========================= */
 function init(){
   loadState();state.upgradesOwned=state.upgradesOwned||{};state.achievements=state.achievements||{};
   renderShop();updateUI();setNoobSkin('base');
