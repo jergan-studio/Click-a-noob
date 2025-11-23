@@ -39,6 +39,8 @@
     .btn-safe{background:var(--btn-safe);}
     .btn-danger{background:var(--btn-danger);}
     .btn-neutral{background:var(--btn-neutral);}
+    /* Global notification */
+    #globalNotify{display:none;position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#163f2b;color:#baf7cf;padding:12px 20px;border-radius:8px;font-weight:700;z-index:999;font-size:16px;}
   </style>
 </head>
 <body>
@@ -120,14 +122,16 @@
             Select a section above.
           </div>
         </div>
-
       </div>
     </div>
 
     <footer>Made for Jergan Studio — ask if you want more skins / achievements / leaderboards.</footer>
   </div>
 
-  <!-- Audio elements -->
+  <!-- Global notify -->
+  <div id="globalNotify"></div>
+
+  <!-- Audio -->
   <audio id="clickSfx"></audio>
   <audio id="buySfx"></audio>
   <audio id="selectSfx"></audio>
@@ -149,18 +153,12 @@ const rebirthBaseCost=100000;
 const repoRaw="https://raw.githubusercontent.com/jergan-studio/Click-a-noob/main/";
 const musicLocalPath=repoRaw+"sounds/bgm.mp3";
 let musicStarted=false,isMuted=false;
+const adminEmailCorrect="jose343lopez22@gmail.com";
 
 /* ========================= AUDIO ========================= */
 const audioElems={click:document.getElementById("clickSfx"),buy:document.getElementById("buySfx"),select:document.getElementById("selectSfx"),music:document.getElementById("music")};
 const fallback={click:"https://assetdelivery.roblox.com/v1/asset/?id=138083894",buy:"https://assetdelivery.roblox.com/v1/asset/?id=911882310",select:"https://assetdelivery.roblox.com/v1/asset/?id=138097048",music:"https://assetdelivery.roblox.com/v1/asset/?id=1836788367"};
-function setupAudioSources(){
-  const repoSources={click:repoRaw+"sounds/oof.wav",buy:repoRaw+"sounds/ding.wav",select:repoRaw+"sounds/select.wav",music:musicLocalPath};
-  audioElems.click.src=repoSources.click; audioElems.buy.src=repoSources.buy; audioElems.select.src=repoSources.select; audioElems.music.src=repoSources.music;
-  audioElems.click.volume=0.45; audioElems.buy.volume=0.45; audioElems.select.volume=0.35; audioElems.music.volume=0.3;
-  Object.keys(audioElems).forEach(k=>{ audioElems[k].addEventListener('error',()=>{ audioElems[k].src=fallback[k]; },{once:true}); });
-  audioElems.music.addEventListener('ended',()=>{ audioElems.music.currentTime=0; audioElems.music.play(); });
-}
-setupAudioSources();
+function setupAudioSources(){const repoSources={click:repoRaw+"sounds/oof.wav",buy:repoRaw+"sounds/ding.wav",select:repoRaw+"sounds/select.wav",music:musicLocalPath};audioElems.click.src=repoSources.click;audioElems.buy.src=repoSources.buy;audioElems.select.src=repoSources.select;audioElems.music.src=repoSources.music;audioElems.click.volume=0.45;audioElems.buy.volume=0.45;audioElems.select.volume=0.35;audioElems.music.volume=0.3;Object.keys(audioElems).forEach(k=>{audioElems[k].addEventListener('error',()=>{audioElems[k].src=fallback[k];},{once:true});});}
 
 /* ========================= UI HELPERS ========================= */
 const el=id=>document.getElementById(id);
@@ -202,20 +200,47 @@ function loadState(){const s=localStorage.getItem(STATE_KEY);if(s){try{state=JSO
 function exportSave(){const data=JSON.stringify(state);const blob=new Blob([data],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="click_a_noob_save.json";a.click();URL.revokeObjectURL(url);}
 function importSavePrompt(){const json=prompt("Paste save JSON here (or cancel):");if(!json)return;try{state=JSON.parse(json);saveState();updateUI();alert("Save imported.");}catch(e){alert("Invalid JSON.");}}
 
-/* ========================= ADMIN PANEL ========================= */
-const adminEmailCorrect="jose343lopez22@gmail.com";
-function checkAdminEmail(){const input=el("adminEmail").value.trim();const status=el("emailStatus");if(input.toLowerCase()===adminEmailCorrect){el("adminCard").style.display="block";status.innerText="Admin panel unlocked!";status.style.color="#0f0";}else{status.innerText="Incorrect email.";status.style.color="#f55";el("adminCard").style.display="none";}}
-function showAdminSection(section){const content=el("adminContent");if(section==="global"){content.innerHTML=`
-<strong>Global Section</strong><br>
-<button class="admin-btn btn-safe" onclick="adminAddScore(100000)">Give 100,000 Score</button>
-<button class="admin-btn btn-safe" onclick="adminMultiplyClick(10)">Multiply Click Power x10</button>
-<button class="admin-btn btn-danger" onclick="adminResetGame()">Reset Entire Game</button>`;}
-else if(section==="local"){content.innerHTML=`
-<strong>Local Section</strong><br>
-<button class="admin-btn btn-safe" onclick="adminAddScoreLocal(1000)">Give +1,000 Score</button>
-<button class="admin-btn btn-safe" onclick="adminAddClicksLocal(100)">Add +100 Clicks</button>
-<button class="admin-btn btn-danger" onclick="adminResetLocal()">Reset My Save</button>`;}
+/* ========================= GLOBAL NOTIFY ========================= */
+function globalNotify(msg,duration=4000){
+  const notify=el("globalNotify");
+  notify.innerText="jergan-studio: "+msg;
+  notify.style.display="block";
+  setTimeout(()=>{notify.style.display="none";},duration);
 }
+
+/* ========================= ADMIN PANEL ========================= */
+function checkAdminEmail(){
+  const input=el("adminEmail").value.trim();
+  const status=el("emailStatus");
+  if(input.toLowerCase()===adminEmailCorrect){
+    el("adminCard").style.display="block";
+    status.innerText="Admin panel unlocked!";
+    status.style.color="#0f0";
+    globalNotify("Admin has joined!");
+  }else{
+    status.innerText="Incorrect email.";
+    status.style.color="#f55";
+    el("adminCard").style.display="none";
+  }
+}
+
+function showAdminSection(section){
+  const content=el("adminContent");
+  if(section==="global"){
+    content.innerHTML=`
+    <strong>Global Section</strong><br>
+    <button class="admin-btn btn-safe" onclick="adminAddScore(100000)">Give 100,000 Score</button>
+    <button class="admin-btn btn-safe" onclick="adminMultiplyClick(10)">Multiply Click Power x10</button>
+    <button class="admin-btn btn-danger" onclick="adminResetGame()">Reset Entire Game</button>`;
+  } else if(section==="local"){
+    content.innerHTML=`
+    <strong>Local Section</strong><br>
+    <button class="admin-btn btn-safe" onclick="adminAddScoreLocal(1000)">Give +1,000 Score</button>
+    <button class="admin-btn btn-safe" onclick="adminAddClicksLocal(100)">Add +100 Clicks</button>
+    <button class="admin-btn btn-danger" onclick="adminResetLocal()">Reset My Save</button>`;
+  }
+}
+
 function adminAddScore(amount){state.score+=amount;saveState();updateUI();alert(`Added ${amount} score globally!`);}
 function adminMultiplyClick(multiplier){state.clickPower*=multiplier;saveState();updateUI();alert(`Click power multiplied by ${multiplier} globally!`);}
 function adminResetGame(){if(confirm("Are you sure you want to reset the entire game?")){localStorage.removeItem(STATE_KEY);location.reload();}}
@@ -224,6 +249,7 @@ function adminAddClicksLocal(amount){state.totalClicks+=amount;state.score+=amou
 function adminResetLocal(){if(confirm("Are you sure you want to reset your save?")){localStorage.removeItem(STATE_KEY);location.reload();}}
 
 /* ========================= BOOTSTRAP ========================= */
+setupAudioSources();
 function init(){
   loadState();state.upgradesOwned=state.upgradesOwned||{};state.achievements=state.achievements||{};
   renderShop();updateUI();setNoobSkin('base');
